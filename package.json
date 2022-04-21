@@ -1,6 +1,6 @@
 {
   "name": "commander",
-  "version": "7.2.0",
+  "version": "7.3.0",
   "description": "the complete solution for node.js command-line programs",
   "keywords": [
     "commander",
@@ -16,7 +16,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tj/commander.js.git"
+    "url": "https://github.com/digreesun/commander.js.git"
   },
   "scripts": {
     "lint": "eslint index.js esm.mjs \"tests/**/*.js\"",
@@ -32,7 +32,7 @@
     "index.js",
     "esm.mjs",
     "typings/index.d.ts",
-    "package-support.json"
+    "CHANGELOG.md"
   ],
   "type": "commonjs",
   "dependencies": {},
@@ -63,6 +63,5 @@
   },
   "engines": {
     "node": ">= 10"
-  },
-  "support": true
+  }
 }

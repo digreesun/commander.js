@@ -22,6 +22,7 @@ declare namespace commander {
 
   interface Option {
     flags: string;
+    flagsE?: string;
     description: string;
 
     required: boolean; // A value must be supplied when the option is specified.
@@ -127,7 +128,7 @@ declare namespace commander {
      * Wrap the given string to width characters per line, with lines after the first indented.
      * Do not wrap if insufficient room for wrapping (minColumnWidth), or string is manually formatted.
      */
-    wrap(str: string, width: number, indent: number, minColumnWidth?: number): string;
+    wrap(str: string, width: number, indent: number, padEsc?: number, minColumnWidth?: number): string;
 
     /** Generate the built-in help text. */
     formatHelp(cmd: Command, helper: Help): string;

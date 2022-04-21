@@ -1,3 +1,9 @@
+# This is a modified fork
+
+**What's changed:**\
+Handling of ESC sequences and improved description wrapping.
+
+
 # Commander.js
 
 [![Build Status](https://github.com/tj/commander.js/workflows/build/badge.svg)](https://github.com/tj/commander.js/actions?query=workflow%3A%22build%22)
@@ -7,7 +13,6 @@
 
 The complete solution for [node.js](http://nodejs.org) command-line interfaces.
 
-Read this in other languages: English | [简体中文](./Readme_zh-CN.md)
 
 - [Commander.js](#commanderjs)
   - [Installation](#installation)
@@ -52,7 +57,7 @@ For information about terms used in this document see: [terminology](./docs/term
 ## Installation
 
 ```bash
-npm install commander
+npm install digreesun/commander.js
 ```
 
 ## Declaring _program_ variable

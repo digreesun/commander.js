@@ -7,6 +7,9 @@ const childProcess = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
+// RegExp for ANSI escape sequences
+const reEsc = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+
 // @ts-check
 
 // Although this is a class, methods are static in style to allow override using subclass or just functions.
@@ -246,10 +249,11 @@ class Help {
     const helpWidth = helper.helpWidth || 80;
     const itemIndentWidth = 2;
     const itemSeparatorWidth = 2; // between term and description
-    function formatItem(term, description) {
+    function formatItem(term, description, padEsc = 0) {
       if (description) {
-        const fullText = `${term.padEnd(termWidth + itemSeparatorWidth)}${description}`;
-        return helper.wrap(fullText, helpWidth - itemIndentWidth, termWidth + itemSeparatorWidth);
+        const indent = termWidth + itemSeparatorWidth;
+        const fullText = `${term.padEnd(indent + padEsc)}${description}`;
+        return helper.wrap(fullText, helpWidth - itemIndentWidth, indent, padEsc);
       }
       return term;
     };
@@ -276,7 +280,11 @@ class Help {
 
     // Options
     const optionList = helper.visibleOptions(cmd).map((option) => {
-      return formatItem(helper.optionTerm(option), helper.optionDescription(option));
+      if (option.flagsE) {
+        let padEsc = option.flagsE.length - (option.flags ? option.flags.length : 0);
+        return formatItem(option.flagsE, helper.optionDescription(option), padEsc);
+      }
+      return formatItem(option.flagsE||option.flags, helper.optionDescription(option), option.padEsc);
     });
     if (optionList.length > 0) {
       output = output.concat(['Options:', formatList(optionList), '']);
@@ -321,26 +329,56 @@ class Help {
    *
    */
 
-  wrap(str, width, indent, minColumnWidth = 40) {
+  wrap(str, width, indent, padEsc = 0, minColumnWidth = 40) {
     // Detect manually wrapped and indented strings by searching for line breaks
     // followed by multiple spaces/tabs.
-    if (str.match(/[\n]\s+/)) return str;
+    if (str.length < width || str.match(/[\n]\s+/)) return str;
     // Do not wrap if not enough room for a wrapped column of text (as could end up with a word per line).
     const columnWidth = width - indent;
     if (columnWidth < minColumnWidth) return str;
 
-    const leadingStr = str.substr(0, indent);
-    const columnText = str.substr(indent);
 
-    const indentString = ' '.repeat(indent);
-    const regex = new RegExp('.{1,' + (columnWidth - 1) + '}([\\s\u200B]|$)|[^\\s\u200B]+?([\\s\u200B]|$)', 'g');
-    const lines = columnText.match(regex) || [];
-    return leadingStr + lines.map((line, i) => {
-      if (line.slice(-1) === '\n') {
-        line = line.slice(0, line.length - 1);
+    let columnText = str.replace(reEsc, '');
+    if (columnText.length < width) return str;
+    columnText = columnText.substr(indent);
+
+    let returnText = str.substr(0, indent + padEsc);
+    str = str.substr(indent + padEsc);
+
+    const indentString = '\n' + ' '.repeat(indent);
+    let len = 0; //const esc = str.matchAll(reEsc)
+    let esc = (columnText.length == str.length)
+              ? null 
+              :(reEsc.lastIndex = 0, reEsc.exec(str));
+
+    while (columnText.length > 0) {
+      let i, line;
+      if (columnText.length > columnWidth) {
+        line = columnText.slice(0, columnWidth);
+        i = line.lastIndexOf('\u200B') + 1 ||
+            line.search(/\s[^\s]*$/) + 1 ||
+            line.search(/[^\w]\w*$/) + 1 ||
+            columnWidth;
+        line = line.slice(0, i);
+        columnText = columnText.slice(i);
+
+      } else {
+        line = columnText;
+        columnText = '';
       }
-      return ((i > 0) ? indentString : '') + line.trimRight();
-    }).join('\n');
+
+      while (esc && (i = esc.index - len) <= line.length) {
+        line = line.substring(0, i) + esc[0]+ line.substring(i);
+        esc = reEsc.exec(str);
+      }
+
+      if (len) {
+        returnText += indentString;
+      }
+      len += line.length;
+      returnText += line.trimRight();
+    }
+    return returnText;
   }
 }
 
@@ -353,7 +391,12 @@ class Option {
    */
 
   constructor(flags, description) {
-    this.flags = flags;
+    this.flags = flags.replace(reEsc, '');
+    if (flags.length > this.flags.length) {
+      this.flagsE = flags;
+      flags = this.flags;
+    }
+
     this.description = description || '';
 
     this.required = flags.includes('<'); // A value must be supplied when the option is specified.
@@ -1361,9 +1404,8 @@ class Command extends EventEmitter {
     } else {
       // Look for source files.
       sourceExt.forEach((ext) => {
-        if (fs.existsSync(`${localBin}${ext}`)) {
+        if (fs.existsSync(`${localBin}${ext}`))
           bin = `${localBin}${ext}`;
-        }
       });
     }
     launchWithNode = sourceExt.includes(path.extname(bin));

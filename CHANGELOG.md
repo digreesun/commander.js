@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 <!-- markdownlint-disable MD024 -->
 <!-- markdownlint-disable MD004 -->
 
+## [7.3.0] (2021-06-01)
+
+### Added
+
+- handling of ESC sequences in the description
+
+### Changed
+
+- improved description wrapping
+
 ## [7.2.0] (2021-03-26)
 
 ### Added

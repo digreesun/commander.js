@@ -288,7 +288,7 @@ expectType<number>(helper.longestOptionTermLength(helperCommand, helper));
 expectType<number>(helper.longestArgumentTermLength(helperCommand, helper));
 expectType<number>(helper.padWidth(helperCommand, helper));
 
-expectType<string>(helper.wrap('a b c', 50, 3));
+expectType<string>(helper.wrap('a b c', 50, 0, 3));
 
 expectType<string>(helper.formatHelp(helperCommand, helper));
 
