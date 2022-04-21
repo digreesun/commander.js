@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 <!-- markdownlint-disable MD024 -->
 <!-- markdownlint-disable MD004 -->
 
-## [7.3.0] (2021-06-01)
+## [7.3.0](https://github.com/digreesun/commander.js/compare/v7.2.0...v7.3.0) (2021-06-01)
 
 ### Added
 
